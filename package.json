@@ -1,17 +1,14 @@
 {
   "name": "help-text",
   "widgetName": "HelpText",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "copyright": "Mendix BV",
+  "copyright": "Mendix",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/MansystemsCorp/HelpText"
   },
   "license": "Apache-2.0",
-  "bugs": {
-    "url": ""
-  },
   "devDependencies": {
     "grunt": "1.0.1",
     "grunt-check-dependencies": "^1.0.0",
