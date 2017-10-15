@@ -1,18 +1,26 @@
 /**
 
 */
-dojo.provide("HelpText.widget.HelpTextTrigger");
+define([
+    "dojo/_base/declare",
+    "mxui/widget/_WidgetBase",
+    "mxui/dom",
+    "dojo/dom-style",
+    "dojo/dom-class",
+    "dojo/dom-construct",
+    "dojo/_base/array",
+    "dojo/_base/lang",
+    "dojo/topic",
+    "dojo/dom-attr",
+    "dojo/html",
+    "dojo/_base/connect"
 
-if (!dojo.getObject("widgets.widgets"))
-	mendix.dom.insertCss(mx.moduleUrl("HelpText", "widget/ui/HelpText.css"));
+], function (declare, _WidgetBase, dom, domStyle, domClass, domConstruct, dojoArray, lang, topic, attr, html, connect) {
+    "use strict";
 
-mendix.widget.declare('HelpText.widget.HelpTextTrigger', {
-	addons       : [],
+    return declare("HelpText.widget.HelpTextTrigger", [_WidgetBase], {
 	
-	inputargs: {
-		txton : '',
-		txtoff: ''
-	},
+        iconstyle: "classic",
 	
 	//IMPLEMENTATION
 	domNode: null,
@@ -22,31 +30,32 @@ mendix.widget.declare('HelpText.widget.HelpTextTrigger', {
 	state : false, //current state
 	
   postCreate : function(){
-		logger.debug(this.id + ".postCreate");
+        logger.debug(this.id + ".postCreate");
 
 		//houskeeping
-		this.imgNode = mendix.dom.div({
+		this.imgNode = dom.create("div", {
 			'class' : 'HelpTextTrigger'
 		});
 		this.domNode.appendChild(this.imgNode);
 		
-		this.txtNode = mendix.dom.label({'class' : 'HelpTextTriggerLabel'}, this.txton);
+		this.txtNode = dom.create("label", {'class' : 'HelpTextTriggerLabel'}, this.txton);
 		this.domNode.appendChild(this.txtNode);
 		
 		this.connect(this.imgNode, 'onclick', this.toggle);
 		this.connect(this.txtNode, 'onclick', this.toggle);
-		
-		this.actRendered();
 	},
 
 	toggle : function() {
 		this.state = !this.state;
-		dojo.attr(this.imgNode, 'class', this.state? 'HelpTextTriggerDown' : 'HelpTextTrigger');
-		dojo.html.set(this.txtNode, this.state == true ? this.txtoff : this.txton);
-		dojo.publish(this.topic, [ this.state ]);
+        attr.set(this.imgNode, 'class', this.state? 'HelpTextTriggerDown' : 'HelpTextTrigger');
+		html.set(this.txtNode, this.state == true ? this.txtoff : this.txton);
+		connect.publish(this.topic, [ this.state ]);
 	},
 	
 	uninitialize : function() {
 		logger.debug(this.id + ".uninitialize");
 	}
 });
+});
+
+require([ "HelpText/widget/HelpTextTrigger" ]);

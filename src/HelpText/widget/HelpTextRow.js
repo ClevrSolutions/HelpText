@@ -4,13 +4,25 @@ These buttons display a help message when clicked or hovered.
 
 Optionally, the buttons can be hidden by default, with a global switch (the Help Text Trigger) to show or hide them. 
 */
-dojo.provide("HelpText.widget.HelpTextRow");
+define([
+    "dojo/_base/declare",
+    "mxui/widget/_WidgetBase",
 
-if (!dojo.getObject("widgets.widgets"))
-	mendix.dom.insertCss(mx.moduleUrl("HelpText", "widget/ui/HelpText.css"));
+    "mxui/dom",
+    "dojo/dom-style",
+    "dojo/dom-class",
+    "dojo/dom-construct",
+    "dojo/_base/array",
+    "dojo/_base/lang",
+    "dojo/html",
+    "dojo/dom-geometry",
+    "dojo/topic",
+    "dojo/_base/fx"
 
-mendix.widget.declare('HelpText.widget.HelpTextRow', {
-	addons       : [],
+], function (declare, _WidgetBase, dom, domStyle, dojoClass, domConstruct, dojoArray, lang, html, domGeom, topic, baseFx) {
+    "use strict";
+
+    return declare("HelpText.widget.HelpTextRow", [_WidgetBase], {
 	
 	inputargs: {
 		text : '',
@@ -30,48 +42,53 @@ mendix.widget.declare('HelpText.widget.HelpTextRow', {
 	postCreate : function(){
 		logger.debug(this.id + ".postCreate");
 
-		dojo.addClass(this.domNode, 'HelpTextRow');
+		dojoClass.add(this.domNode, 'HelpTextRow');
 		this.createHelp();
 		this.rowNode = this.findRowNode(this.domNode);
-		dojo.style(this.domNode, 'maxHeight', this.height + 'px');
-		dojo.style(this.rowNode, 'height', 'auto'); //follow the animation
-		this.actRendered();
-		setTimeout(dojo.hitch(this, this.poststartup), 1);
+		domStyle.set(this.domNode, 'maxHeight', this.height + 'px');
+        if (this.rowNode) {
+            domStyle.set(this.rowNode, 'height', 'auto'); //follow the animation
+        }
+        setTimeout(lang.hitch(this, this.poststartup), 1);
 	},
 	
 	poststartup : function() {
-		var box = dojo.marginBox(this.domNode);
+		var box = domGeom.getMarginBox(this.domNode);
 		this.targetHeight = box.h; //find calculated height
 
 		if (!this.startvisible) {
-			dojo.style(this.domNode, 'height', 0);
-			dojo.style(this.rowNode, 'display','none');
-		}
+            // domStyle.set(this.domNode, 'height', 0);
+        if (this.rowNode) {
+            domStyle.set(this.rowNode, 'display','none');
+        }
+    }
 			
 		this.stateChange(this.startvisible);
-		this.handle = dojo.subscribe(this.topic, this, this.stateChange);
+		this.handle = topic.subscribe(this.topic, this, this.stateChange);
 			
 	},
 	
 	findRowNode : function(parent) {
+        if (tag) {
 		var tag = parent.tagName.toLowerCase();
 		if (tag == 'tr' || tag == 'th')
 			return parent;
 		else if (parent.parentNode != null)
 			return this.findRowNode(parent.parentNode);
-		throw new Exception(this.id + " Did not found a parent row to show or hide");
+        throw new Exception(this.id + " Did not found a parent row to show or hide");
+        }
 	},
 
 	updateHeight : function(height) {
 		if (this.anim != null)
 			this.anim.stop();
-		this.anim = dojo.animateProperty({
+		this.anim = baseFx.animateProperty({
 			node : this.domNode,
-			duration : 500,
+			duration : 4000,
 			properties : { height : height },
-			onEnd : dojo.hitch(this, function() {
-				if (height == 0)
-					dojo.style(this.rowNode, 'display', 'none');
+			onEnd : lang.hitch(this, function() {
+				if (height == 0 && this.rowNode)
+                domStyle.set(this.rowNode, 'display', 'none');
 			})
 		});
 		this.anim.play();
@@ -79,7 +96,9 @@ mendix.widget.declare('HelpText.widget.HelpTextRow', {
 
 	stateChange : function(newstate) {
 		if (newstate) {
-			dojo.style(this.rowNode, 'display','table-row');		
+            if (rowNode) {
+                domStyle.set(this.rowNode, 'display','table-row');
+            }		
 			this.updateHeight(this.targetHeight);
 		}
 		else if (!this.startvisible) {
@@ -88,7 +107,7 @@ mendix.widget.declare('HelpText.widget.HelpTextRow', {
 	},
 	
 	createHelp : function () {
-		dojo.html.set(this.domNode, this.text);
+		html.set(this.domNode, this.text);
 		if (this.hideonclick == true)
 			this.connect(this.domNode, 'onclick', this.hideHelp);
 	},
@@ -99,6 +118,9 @@ mendix.widget.declare('HelpText.widget.HelpTextRow', {
 	},
 	
 	uninitialize : function() {
-		dojo.unsubscribe(this.handle);
+		this.handle.remove();
 	}
-});
+    });
+    });
+
+require([ "HelpText/widget/HelpTextRow" ]);

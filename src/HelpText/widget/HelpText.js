@@ -4,14 +4,24 @@ These buttons display a help message when clicked or hovered.
 
 Optionally, the buttons can be hidden by default, with a global switch (the Help Text Trigger) to show or hide them. 
 */
-dojo.provide("HelpText.widget.HelpText");
+define([
+    "dojo/_base/declare",
+    "mxui/widget/_WidgetBase",
+    "mxui/dom",
+    "dojo/dom-style",
+    "dojo/dom-geometry",
+    "dojo/_base/array",
+    "dojo/_base/lang",
+    "dojo/html",
+    "dojo/_base/event",
+    "dojo/dom-geometry",
+    "dojo/topic"
 
-if (!dojo.getObject("widgets.widgets"))
-	mendix.dom.insertCss(mx.moduleUrl("HelpText", "widget/ui/HelpText.css"));
+], function (declare, _WidgetBase, dom, domStyle, domGeometry, dojoArray, lang, html, event, domGeom, topic) {
+    "use strict";
 
-mendix.widget.declare('HelpText.widget.HelpText', {
-	addons       : [],
-	
+    return declare("HelpText.widget.HelpText", [_WidgetBase], {
+
 	inputargs: {
 		text : '',
 		startvisible : false,
@@ -34,14 +44,14 @@ mendix.widget.declare('HelpText.widget.HelpText', {
 		logger.debug(this.id + ".postCreate");
 
 		//img node
-		this.imgNode = mendix.dom.div({
+		this.imgNode = dom.create("div", {
 			'class' : 'HelpTextButton'
 		});
 		this.domNode.appendChild(this.imgNode);
-		this.connect(this.imgNode, 'onclick', dojo.hitch(this, this.toggleHelp, true));
+		this.connect(this.imgNode, 'onclick', lang.hitch(this, this.toggleHelp, true));
 		if (this.showonhover) {
-			this.connect(this.imgNode, 'onmouseenter', dojo.hitch(this, this.showHelp, true, false));
-			this.connect(this.imgNode, 'onmouseleave', dojo.hitch(this, this.showHelp, false, false));
+			this.connect(this.imgNode, 'onmouseenter', lang.hitch(this, this.showHelp, true, false));
+			this.connect(this.imgNode, 'onmouseleave', lang.hitch(this, this.showHelp, false, false));
 		}
 		
 		//help node
@@ -50,35 +60,35 @@ mendix.widget.declare('HelpText.widget.HelpText', {
 		this.stateChange(this.startvisible);
 		this.handle = dojo.subscribe(this.topic, this, this.stateChange);
 		
-		this.actRendered();
+		this.actLoaded();
 	},
 
 	stateChange : function(newstate) {
 		if (newstate)
-			dojo.style(this.imgNode, "display", "block")
+		domStyle.set(this.imgNode, "display", "block")
 		else if (!this.startvisible) {
 			this.helpvisible = false;
-			dojo.style(this.imgNode, "display", "none");
+			domStyle.set(this.imgNode, "display", "none");
 			this.showHelp(false);
 		}
 	},
 	
 	createHelp : function () {
-		this.helpNode = mendix.dom.div({'class' : 'HelpTextBox'});
+		this.helpNode = dom.create('div',{'class' : 'HelpTextBox'});
 		var input = this.text.replace(/\n/g, '<br />');
-		dojo.html.set(this.helpNode, input);
-		dojo.style(this.helpNode, {
+		html.set(this.helpNode, input);
+		domStyle.set(this.helpNode, {
 			'width' : this.width + 'px',
 			'maxHeight' : this.height + 'px'
 		});
-		this.connect(this.helpNode, 'onclick', dojo.hitch(this, this.toggleHelp, true));
+		this.connect(this.helpNode, 'onclick', lang.hitch(this, this.toggleHelp, true));
 		document.body.appendChild(this.helpNode);
 	},
 
 	toggleHelp : function(clicked, e) {
 		this.helpvisible = !this.helpvisible;
 		this.showHelp(this.helpvisible, clicked);
-		dojo.stopEvent(e);
+		event.stop(e);
 	},
 	
 	windowClick : function () {
@@ -89,18 +99,18 @@ mendix.widget.declare('HelpText.widget.HelpText', {
 	
 	showHelp : function(show, clicked) {
 		if (show || this.helpvisible) {
-			var coords = dojo.coords(this.imgNode, true);
+			var coords = domGeom.position(this.imgNode, true);
 			if (this.closeClick && clicked)
 				this.windowEvt = this.connect(document.body, 'onclick', this.windowClick);
 			
-			dojo.style(this.helpNode, {
+				domStyle.set(this.helpNode, {
 				'display' : 'block',
 				'top' : (coords.y + 30)+'px',
 				'left': (window.innerWidth < coords.x + 30 + this.width ? coords.x - this.height - 30 : coords.x + 30)+'px'
 			});
 		}
 		else
-			dojo.style(this.helpNode, 'display', 'none');
+		domStyle.set(this.helpNode, 'display', 'none');
 	},
 	
 	suspended : function() {
@@ -117,10 +127,13 @@ mendix.widget.declare('HelpText.widget.HelpText', {
 			if (this.helpNode != null)
 					document.body.removeChild(this.helpNode);
 			if (this.handle != null)
-					dojo.unsubscribe(this.handle);
+			this.handle.remove();
 		}
 		catch(e) {
 			logger.warn("error on helptextviewer unload: " + e);
 		}
 	}
-});
+	});
+	});
+
+require([ "HelpText/widget/HelpText" ]);
